@@ -110,7 +110,7 @@ public class OrganizationController {
     public ResponseEntity<EmployeeResource> createEmployee(@PathVariable Long orgId, @RequestBody EmployeeResource sentEmployee)
     {
         try {
-            Employee employee = service.createEmployee(sentEmployee.toEmployee().getEmployeeOrg().getOrgId(), (sentEmployee.toEmployee()));
+            Employee employee = service.createEmployee(orgId, (sentEmployee.toEmployee()));
             EmployeeResource resource = new EmployeeResourceAsm().toResource(employee);
             HttpHeaders headers = new HttpHeaders();
             headers.setLocation(URI.create(resource.getLink("self").getHref()));

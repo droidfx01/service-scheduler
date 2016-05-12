@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuite tests="1" failures="0" name="scheduler.mvc.OrganizationControllerTest" time="1.773" errors="0" skipped="0">
+<testsuite tests="10" failures="0" name="scheduler.mvc.OrganizationControllerTest" time="1.776" errors="0" skipped="0">
   <properties>
     <property name="idea.version" value="2016.1.1"/>
     <property name="java.runtime.name" value="Java(TM) SE Runtime Environment"/>
@@ -11,7 +11,6 @@
     <property name="guice.disable.misplaced.annotation.check" value="true"/>
     <property name="java.vm.name" value="Java HotSpot(TM) Client VM"/>
     <property name="file.encoding.pkg" value="sun.io"/>
-    <property name="idea.launcher.port" value="7532"/>
     <property name="user.script" value=""/>
     <property name="user.country" value="US"/>
     <property name="sun.java.launcher" value="SUN_STANDARD"/>
@@ -39,14 +38,13 @@
     <property name="user.timezone" value="America/New_York"/>
     <property name="java.awt.printerjob" value="sun.awt.windows.WPrinterJob"/>
     <property name="java.specification.version" value="1.8"/>
-    <property name="idea.launcher.bin.path" value="C:\Program Files\JetBrains\IntelliJ IDEA 2016.1.1\bin"/>
     <property name="file.encoding" value="UTF-8"/>
     <property name="user.name" value="c113554"/>
     <property name="java.class.path" value="C:\Program Files\JetBrains\IntelliJ IDEA 2016.1.1\plugins\maven\lib\maven3\boot\plexus-classworlds-2.4.jar;C:\Program Files\JetBrains\IntelliJ IDEA 2016.1.1\lib\idea_rt.jar"/>
     <property name="java.vm.specification.version" value="1.8"/>
     <property name="sun.arch.data.model" value="32"/>
     <property name="java.home" value="C:\Program Files\Java\jdk1.8.0_73\jre"/>
-    <property name="sun.java.command" value="com.intellij.rt.execution.application.AppMain org.codehaus.classworlds.Launcher -Didea.version=2016.1.1 test"/>
+    <property name="sun.java.command" value="org.codehaus.classworlds.Launcher -Didea.version=2016.1.1 surefire:test"/>
     <property name="java.specification.vendor" value="Oracle Corporation"/>
     <property name="user.language" value="en"/>
     <property name="awt.toolkit" value="sun.awt.windows.WToolkit"/>
@@ -63,5 +61,14 @@
     <property name="sun.desktop" value="windows"/>
     <property name="sun.cpu.isalist" value="pentium_pro+mmx pentium_pro pentium+mmx pentium i486 i386 i86"/>
   </properties>
-  <testcase classname="scheduler.mvc.OrganizationControllerTest" name="test" time="1.524"/>
+  <testcase classname="scheduler.mvc.OrganizationControllerTest" name="getNonExistingOrganization" time="1.111"/>
+  <testcase classname="scheduler.mvc.OrganizationControllerTest" name="getExistingOrganization" time="0.146"/>
+  <testcase classname="scheduler.mvc.OrganizationControllerTest" name="createOrganization" time="0.1"/>
+  <testcase classname="scheduler.mvc.OrganizationControllerTest" name="deleteNonExistingOrganization" time="0.042"/>
+  <testcase classname="scheduler.mvc.OrganizationControllerTest" name="deleteOrganization" time="0.029"/>
+  <testcase classname="scheduler.mvc.OrganizationControllerTest" name="getAllOrganizations" time="0.12"/>
+  <testcase classname="scheduler.mvc.OrganizationControllerTest" name="updateOrganization" time="0.037"/>
+  <testcase classname="scheduler.mvc.OrganizationControllerTest" name="updateNonExistingOrganization" time="0.029"/>
+  <testcase classname="scheduler.mvc.OrganizationControllerTest" name="createOrganizationAlreadyExists" time="0.031"/>
+  <testcase classname="scheduler.mvc.OrganizationControllerTest" name="createEmployee" time="0.031"/>
 </testsuite>

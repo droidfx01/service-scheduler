@@ -5,6 +5,7 @@ import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -260,29 +261,37 @@ public class OrganizationControllerTest {
     @Test
     public void createEmployee() throws Exception
     {
-        Employee manager = new Employee();
-        manager.setEmployeeId(1L);
-
         Organization organization = new Organization();
         organization.setOrgId(1L);
+        organization.setOrgName("Mason's Computer Solutions");
+        organization.setOrgDescription("A computer repair business.");
+        organization.setOrgAddress1("225 East Ave Apt 3C");
+        organization.setOrgAddress2("");
+        organization.setOrgCity("Syracuse");
+        organization.setOrgZip(13224);
+        organization.setOrgState("NY");
+        organization.setOrgCountry("US");
 
         Employee employee = new Employee();
-        employee.setEmployeeId(2L);
+        employee.setEmployeeId(1L);
         employee.setEmployeeFirst("Hernando");
         employee.setEmployeeLast("Hoyos");
         employee.setEmployeeEmail("hfrog713@gmail.com");
         employee.setEmployeeBio("I am a computer technician and I work with everything from hardware to any type of software");
         employee.setEmployeeImagePath(null);
+        employee.setEmployeeManager(null);
         employee.setEmployeeOrg(organization);
-        employee.setEmployeeManager(manager);
 
-        when(service.createEmployee(eq(employee.getEmployeeOrg().getOrgId()),any(Employee.class))).thenReturn(employee);
+        when(service.createEmployee(eq(1L), any(Employee.class))).thenReturn(employee);
 
-        mockMvc.perform(post("/rest/organizations/0/employees")
+        mockMvc.perform(post("/rest/organizations/1/employees")
                 //.content("{\"employeeFirst\": \"Hernando\", \"employeeLast\": \"Hoyos\", \"employeeEmail\": \"hfrog713@gmail.com\", \"employeeBio\": \"I am a computer technician and I work with everything from hardware to any type of software\", \"employeeImagePath\": \"\", \"employeeManager\": \"{\"employeeId\":\"1\"}\"}")
-                .content("{\"employeeFirst\": \"Hernando\", \"employeeLast\": \"Hoyos\", \"employeeEmail\": \"hfrog713@gmail.com\", \"employeeBio\": \"This is a test bio\",\"employeeImagePath\": \"\",\"employeeOrg\": {\"orgId\":\"1\"}}")
+                //.content("{\"employeeFirst\": \"Hernando\", \"employeeLast\": \"Hoyos\", \"employeeEmail\": \"hfrog713@gmail.com\", \"employeeBio\": \"This is a test bio\",\"employeeImagePath\": \"\",\"employeeOrg\": {\"orgId\":\"1\"}}")
+                .content("{\"employeeFirst\":\"Hernando\", \"employeeLast\":\"Hoyos\", \"employeeEmail\":\"hfrog713@gmail.com\", \"employeeBio\":\"Test Bio\", \"employeeImagePath\":\"\", \"employeeManager\":{}}")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print());
+                //.andExpect(status().isOk());
+
 //                .andExpect(header().string("Location", org.hamcrest.Matchers.endsWith("/rest/organizations/0/employees/2")))
 //                .andExpect(jsonPath("$.employeeFirstName", is(employee.getEmployeeFirst())))
 //                .andExpect(jsonPath("$.employeeLastName", is(employee.getEmployeeLast())))
