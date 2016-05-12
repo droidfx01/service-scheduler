@@ -1,0 +1,6 @@
+0:0:0:0:0:0:0:1 - - [10/May/2016:12:03:54 -0400] "GET /service-scheduler/test HTTP/1.1" 404 1027 http-bio-8080-exec-1 1201
+0:0:0:0:0:0:0:1 - - [10/May/2016:12:03:54 -0400] "GET /favicon.ico HTTP/1.1" 404 - http-bio-8080-exec-3 0
+0:0:0:0:0:0:0:1 - - [10/May/2016:12:05:39 -0400] "GET /service-scheduler/test HTTP/1.1" 404 1027 http-bio-8080-exec-1 961
+0:0:0:0:0:0:0:1 - - [10/May/2016:12:06:30 -0400] "GET /service-scheduler/test HTTP/1.1" 404 1027 http-bio-8080-exec-5 4
+0:0:0:0:0:0:0:1 - - [10/May/2016:12:07:59 -0400] "GET /service-scheduler/test HTTP/1.1" 404 1027 http-bio-8080-exec-1 936
+0:0:0:0:0:0:0:1 - - [10/May/2016:12:08:38 -0400] "GET /service-scheduler/test HTTP/1.1" 200 12 http-bio-8080-exec-2 661
