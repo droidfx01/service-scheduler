@@ -4,6 +4,7 @@ import scheduler.core.models.entities.Employee;
 import scheduler.core.models.entities.Organization;
 import scheduler.core.services.util.EmployeeList;
 import scheduler.core.services.util.OrganizationList;
+import scheduler.rest.resources.EmployeeResource;
 
 /**
  * Created by c113554 on 05/11/2016.
@@ -11,5 +12,5 @@ import scheduler.core.services.util.OrganizationList;
 public interface EmployeeService {
     public Employee findEmployee(Long id);
     public Employee deleteEmployee(Long id);
-    public Employee updateEmployee(Long id, Employee data);
+    public Employee updateEmployee(Long id, EmployeeResource data);
 }

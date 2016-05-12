@@ -5,6 +5,7 @@ import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.aop.ThrowsAdvice;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
@@ -12,7 +13,10 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import scheduler.core.models.entities.Employee;
 import scheduler.core.models.entities.Organization;
 import scheduler.core.services.OrganizationService;
+import scheduler.core.services.exceptions.EmployeeAlreadyExistsException;
 import scheduler.core.services.exceptions.OrganizationAlreadyExistsException;
+import scheduler.core.services.exceptions.OrganizationNotFoundException;
+import scheduler.core.services.util.EmployeeList;
 import scheduler.core.services.util.OrganizationList;
 import scheduler.rest.mvc.OrganizationController;
 
@@ -285,22 +289,113 @@ public class OrganizationControllerTest {
         when(service.createEmployee(eq(1L), any(Employee.class))).thenReturn(employee);
 
         mockMvc.perform(post("/rest/organizations/1/employees")
-                //.content("{\"employeeFirst\": \"Hernando\", \"employeeLast\": \"Hoyos\", \"employeeEmail\": \"hfrog713@gmail.com\", \"employeeBio\": \"I am a computer technician and I work with everything from hardware to any type of software\", \"employeeImagePath\": \"\", \"employeeManager\": \"{\"employeeId\":\"1\"}\"}")
-                //.content("{\"employeeFirst\": \"Hernando\", \"employeeLast\": \"Hoyos\", \"employeeEmail\": \"hfrog713@gmail.com\", \"employeeBio\": \"This is a test bio\",\"employeeImagePath\": \"\",\"employeeOrg\": {\"orgId\":\"1\"}}")
                 .content("{\"employeeFirst\":\"Hernando\", \"employeeLast\":\"Hoyos\", \"employeeEmail\":\"hfrog713@gmail.com\", \"employeeBio\":\"Test Bio\", \"employeeImagePath\":\"\", \"employeeManager\":{}}")
                 .contentType(MediaType.APPLICATION_JSON))
-                .andDo(print());
-                //.andExpect(status().isOk());
-
-//                .andExpect(header().string("Location", org.hamcrest.Matchers.endsWith("/rest/organizations/0/employees/2")))
-//                .andExpect(jsonPath("$.employeeFirstName", is(employee.getEmployeeFirst())))
-//                .andExpect(jsonPath("$.employeeLastName", is(employee.getEmployeeLast())))
-//                .andExpect(jsonPath("$.employeeEmail", is(employee.getEmployeeEmail())))
-//                .andExpect(jsonPath("$.employeeBio", is(employee.getEmployeeBio())))
-//                .andExpect(jsonPath("$.employeeImagePath", is(employee.getEmployeeImagePath())))
-//                .andExpect(jsonPath("$.employeeManager", is(employee.getEmployeeManager())))
-//                .andExpect(status().isCreated());
+                .andDo(print())
+                .andExpect(jsonPath("$.employeeFirst", is("Hernando")))
+                .andExpect(jsonPath("$.employeeLast", is("Hoyos")))
+                .andExpect(jsonPath("$.employeeEmail", is("hfrog713@gmail.com")))
+                .andExpect(jsonPath("$.employeeBio", is("I am a computer technician and I work with everything from hardware to any type of software")));
     }
-    //TODO: Add Test for findAllEmployeesByOrg
-    //TODO: Add Test for findAllEmployeesByNonExistingOrg
+
+    @Test
+    public void createEmployeeAlreadyExists() throws Exception
+    {
+        Employee employee = new Employee();
+        employee.setEmployeeId(1L);
+        employee.setEmployeeFirst("Hernando");
+        employee.setEmployeeLast("Hoyos");
+        employee.setEmployeeEmail("hfrog713@gmail.com");
+        employee.setEmployeeBio("I am a computer technician and I work with everything from hardware to any type of software");
+        employee.setEmployeeImagePath(null);
+        employee.setEmployeeManager(null);
+
+
+        when(service.createEmployee(eq(1L), any(Employee.class))).thenThrow(new EmployeeAlreadyExistsException());
+
+        mockMvc.perform(post("/rest/organizations/1/employees")
+                .content("{\"employeeFirst\":\"Hernando\", \"employeeLast\":\"Hoyos\", \"employeeEmail\":\"hfrog713@gmail.com\", \"employeeBio\":\"Test Bio\", \"employeeImagePath\":\"\", \"employeeManager\":{}}")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isConflict());
+    }
+
+    @Test
+    public void createEmployeeNonExistingOrganization() throws Exception{
+        Employee employee = new Employee();
+        employee.setEmployeeId(1L);
+        employee.setEmployeeFirst("Hernando");
+        employee.setEmployeeLast("Hoyos");
+        employee.setEmployeeEmail("hfrog713@gmail.com");
+        employee.setEmployeeBio("I am a computer technician and I work with everything from hardware to any type of software");
+        employee.setEmployeeImagePath(null);
+        employee.setEmployeeManager(null);
+
+
+        when(service.createEmployee(eq(1L), any(Employee.class))).thenThrow(new OrganizationNotFoundException());
+
+        mockMvc.perform(post("/rest/organizations/1/employees")
+                .content("{\"employeeFirst\":\"Hernando\", \"employeeLast\":\"Hoyos\", \"employeeEmail\":\"hfrog713@gmail.com\", \"employeeBio\":\"Test Bio\", \"employeeImagePath\":\"\", \"employeeManager\":{}}")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void getAllEmployeesByOrganization() throws Exception{
+        Organization organization = new Organization();
+        organization.setOrgId(1L);
+        organization.setOrgName("Mason's Computer Solutions");
+        organization.setOrgDescription("A computer repair business.");
+        organization.setOrgAddress1("225 East Ave Apt 3C");
+        organization.setOrgAddress2("");
+        organization.setOrgCity("Syracuse");
+        organization.setOrgZip(13224);
+        organization.setOrgState("NY");
+        organization.setOrgCountry("US");
+
+        List<Employee> list = new ArrayList<>();
+
+        Employee employee = new Employee();
+        employee.setEmployeeId(1L);
+        employee.setEmployeeFirst("Hernando");
+        employee.setEmployeeLast("Hoyos");
+        employee.setEmployeeEmail("hfrog713@gmail.com");
+        employee.setEmployeeBio("I am a computer technician and I work with everything from hardware to any type of software");
+        employee.setEmployeeImagePath(null);
+        employee.setEmployeeManager(null);
+        employee.setEmployeeOrg(organization);
+        list.add(employee);
+
+        Employee employee2 = new Employee();
+        employee2.setEmployeeId(2L);
+        employee2.setEmployeeFirst("Carlos");
+        employee2.setEmployeeLast("Hoyos");
+        employee2.setEmployeeEmail("carloshoyos45@gmail.com");
+        employee2.setEmployeeBio("I am a currently in China");
+        employee2.setEmployeeImagePath(null);
+        employee2.setEmployeeManager(employee);
+        employee2.setEmployeeOrg(organization);
+        list.add(employee2);
+
+        EmployeeList employees = new EmployeeList();
+        employees.setEmployees(list);
+
+        when(service.findAllEmployeesByOrg((eq(1L)))).thenReturn(employees);
+        mockMvc.perform(get("/rest/organizations/1/employees"))
+                .andDo(print())
+                .andExpect(jsonPath("$.employees[*].employeeLast", hasItem(is("Hoyos"))))
+                .andExpect(jsonPath("$.employees[*].employeeFirst", hasItems(is("Hernando"), is("Carlos"))))
+                .andExpect(jsonPath("$.employees[*].links[*].href", hasItems(endsWith("/rest/organizations/1/employees/1"), endsWith("/rest/organizations/1/employees/2"))))
+                .andExpect(status().isOk());
+
+    }
+    public void getAllEmployeesByNonExistingOrganization() throws Exception{
+
+        when(service.findAllEmployeesByOrg(eq(1L))).thenThrow(new OrganizationNotFoundException());
+
+        mockMvc.perform(get("/rest/organizations/1/employees"))
+                .andDo(print())
+                .andExpect(status().isNotFound());
+    }
 }

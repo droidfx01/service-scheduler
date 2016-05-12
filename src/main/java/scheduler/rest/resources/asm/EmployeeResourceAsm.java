@@ -20,21 +20,20 @@ public class EmployeeResourceAsm extends ResourceAssemblerSupport<Employee,Emplo
 
     @Override
     public EmployeeResource toResource(Employee employee) {
-
         EmployeeResource resource = new EmployeeResource();
+        Long orgId = employee.getEmployeeOrg().getOrgId();
         resource.setEmployeeFirst(employee.getEmployeeFirst());
         resource.setEmployeeLast(employee.getEmployeeLast());
         resource.setEmployeeBio(employee.getEmployeeBio());
         resource.setEmployeeEmail(employee.getEmployeeEmail());
         resource.setEmployeeImagePath(employee.getEmployeeImagePath());
-        //resource.setEmployeeOrg(employee.getEmployeeOrg());
         resource.setEmployeeManager(employee.getEmployeeManager());
 
-        Link self = linkTo(EmployeeController.class).slash(employee.getEmployeeId()).withSelfRel();
+        Link self = linkTo(OrganizationController.class).slash(orgId).slash("employees").slash(employee.getEmployeeId()).withSelfRel();
         resource.add(self);
         if(employee.getEmployeeOrg() != null)
         {
-            //resource.add(linkTo(OrganizationController.class).slash(employee.getEmployeeOrg().getOrgId()).withRel("organization"));
+            resource.add(linkTo(OrganizationController.class).slash(employee.getEmployeeOrg().getOrgId()).withRel("organization"));
         }
         return resource;
     }

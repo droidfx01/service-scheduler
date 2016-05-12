@@ -9,7 +9,6 @@ import scheduler.core.models.entities.Organization;
  * Created by c113554 on 05/11/2016.
  */
 public class EmployeeResource extends ResourceSupport {
-    private Long employeeId;
     private String employeeFirst;
     private String employeeLast;
     private String employeeEmail;
@@ -78,14 +77,6 @@ public class EmployeeResource extends ResourceSupport {
         this.employeeFirst = employeeFirst;
     }
 
-    public Long getEmployeeId() {
-        return employeeId;
-    }
-
-    public void setEmployeeId(Long employeeId) {
-        this.employeeId = employeeId;
-    }
-
     public Employee toEmployee(){
         Employee employee = new Employee();
         employee.setEmployeeFirst(employeeFirst);
@@ -94,7 +85,6 @@ public class EmployeeResource extends ResourceSupport {
         employee.setEmployeeEmail(employeeEmail);
         employee.setEmployeeImagePath(employeeImagePath);
         employee.setEmployeeManager(employeeManager);
-        employee.setEmployeeOrg(employeeOrg);
         return employee;
     }
 

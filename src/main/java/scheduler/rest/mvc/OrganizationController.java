@@ -11,9 +11,11 @@ import scheduler.core.models.entities.Organization;
 import scheduler.core.services.OrganizationService;
 import scheduler.core.services.exceptions.EmployeeAlreadyExistsException;
 import scheduler.core.services.exceptions.OrganizationAlreadyExistsException;
+import scheduler.core.services.exceptions.OrganizationNotFoundException;
 import scheduler.core.services.util.EmployeeList;
 import scheduler.core.services.util.OrganizationList;
 import scheduler.rest.exceptions.ConflictException;
+import scheduler.rest.exceptions.NotFoundException;
 import scheduler.rest.resources.EmployeeListResource;
 import scheduler.rest.resources.EmployeeResource;
 import scheduler.rest.resources.OrganizationListResource;
@@ -100,10 +102,9 @@ public class OrganizationController {
     @RequestMapping(value = "/{orgId}/employees", method = RequestMethod.GET)
     public ResponseEntity<EmployeeListResource> getAllEmployeesByOrg(@PathVariable Long orgId){
         EmployeeList employeeList = service.findAllEmployeesByOrg(orgId);
+        employeeList.setOrgId(orgId);
         EmployeeListResource resource = new EmployeeListResourceAsm().toResource(employeeList);
-        HttpHeaders headers = new HttpHeaders();
-        headers.setLocation(URI.create(resource.getLink("self").getHref()));
-        return new ResponseEntity<EmployeeListResource>(resource, headers, HttpStatus.OK);
+        return new ResponseEntity<EmployeeListResource>(resource, HttpStatus.OK);
     }
 
     @RequestMapping(value = "/{orgId}/employees", method = RequestMethod.POST)
@@ -117,6 +118,8 @@ public class OrganizationController {
             return new ResponseEntity<EmployeeResource>(resource, headers, HttpStatus.CREATED);
         } catch (EmployeeAlreadyExistsException exception) {
             throw new ConflictException(exception);
+        } catch (OrganizationNotFoundException exception){
+            throw new NotFoundException(exception);
         }
     }
 }
