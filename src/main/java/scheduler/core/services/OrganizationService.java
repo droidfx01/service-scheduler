@@ -15,6 +15,6 @@ public interface OrganizationService {
     public Organization deleteOrg(Long id);
     public Organization updateOrg(Long id, Organization data);
 
-    public Employee createEmployee(Long orgId, Employee data); //TODO: Implement the createEmployee method on the AccountController
-    public EmployeeList findAllEmployeesByOrg(Long orgId); //TODO: Implement the findAllEmployeesByOrg method on the AccountController
+    public Employee createEmployee(Long orgId, Employee data);
+    public EmployeeList findAllEmployeesByOrg(Long orgId);
 }
