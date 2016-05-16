@@ -390,6 +390,7 @@ public class OrganizationControllerTest {
                 .andExpect(status().isOk());
 
     }
+    @Test
     public void getAllEmployeesByNonExistingOrganization() throws Exception{
 
         when(service.findAllEmployeesByOrg(eq(1L))).thenThrow(new OrganizationNotFoundException());
@@ -397,5 +398,19 @@ public class OrganizationControllerTest {
         mockMvc.perform(get("/rest/organizations/1/employees"))
                 .andDo(print())
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void createOrgSchedule(){
+        //TODO: Implement
+    }
+
+    @Test
+    public void createOrgScheduleAlreadyExists(){
+        //TODO: Implement
+    }
+
+    @Test void createOrgScheduleOrgNotFound(){
+        //TODO: Implement
     }
 }

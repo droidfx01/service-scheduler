@@ -1,5 +1,8 @@
 package scheduler.rest.mvc;
 
+import com.sun.net.httpserver.Headers;
+import org.springframework.core.io.Resource;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -8,25 +11,22 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import scheduler.core.models.entities.Employee;
 import scheduler.core.models.entities.Organization;
+import scheduler.core.models.entities.OrganizationSchedule;
 import scheduler.core.services.OrganizationService;
 import scheduler.core.services.exceptions.EmployeeAlreadyExistsException;
 import scheduler.core.services.exceptions.OrganizationAlreadyExistsException;
 import scheduler.core.services.exceptions.OrganizationNotFoundException;
+import scheduler.core.services.exceptions.ScheduleAlreadyExistsException;
 import scheduler.core.services.util.EmployeeList;
 import scheduler.core.services.util.OrganizationList;
 import scheduler.rest.exceptions.ConflictException;
 import scheduler.rest.exceptions.NotFoundException;
-import scheduler.rest.resources.EmployeeListResource;
-import scheduler.rest.resources.EmployeeResource;
-import scheduler.rest.resources.OrganizationListResource;
-import scheduler.rest.resources.OrganizationResource;
-import scheduler.rest.resources.asm.EmployeeListResourceAsm;
-import scheduler.rest.resources.asm.EmployeeResourceAsm;
-import scheduler.rest.resources.asm.OrganizationListResourceAsm;
-import scheduler.rest.resources.asm.OrganizationResourceAsm;
+import scheduler.rest.resources.*;
+import scheduler.rest.resources.asm.*;
 
 import javax.xml.ws.Response;
 import java.net.URI;
+import java.util.Date;
 
 /**
  * Created by c113554 on 05/10/2016.
@@ -120,6 +120,23 @@ public class OrganizationController {
             throw new ConflictException(exception);
         } catch (OrganizationNotFoundException exception){
             throw new NotFoundException(exception);
+        }
+    }
+
+    @RequestMapping(value = "/{orgId}/schedules/", method = RequestMethod.POST)
+    public ResponseEntity<OrganizationScheduleResource> createOrgSchedule(@PathVariable Long orgId,  @RequestBody OrganizationScheduleResource sentSchedule)
+    {
+        try
+        {
+            OrganizationSchedule schedule = service.createOrgSchedule(orgId, date, sentSchedule.toSchedule());
+            OrganizationScheduleResource resource = new OrganizationScheduleResourceAsm().toResource(schedule);
+            HttpHeaders headers = new HttpHeaders();
+            headers.setLocation(URI.create(resource.getLink("self").getHref()));
+            return new ResponseEntity<OrganizationScheduleResource>(resource, headers, HttpStatus.CREATED);
+        }
+        catch(ScheduleAlreadyExistsException exception)
+        {
+            throw new ConflictException(exception);
         }
     }
 }
