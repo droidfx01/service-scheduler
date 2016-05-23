@@ -1,28 +1,31 @@
 package scheduler.mvc;
 
+import org.joda.time.DateTime;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.springframework.aop.ThrowsAdvice;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import scheduler.core.models.entities.Employee;
 import scheduler.core.models.entities.Organization;
+import scheduler.core.models.entities.OrganizationSchedule;
 import scheduler.core.services.OrganizationService;
 import scheduler.core.services.exceptions.EmployeeAlreadyExistsException;
 import scheduler.core.services.exceptions.OrganizationAlreadyExistsException;
 import scheduler.core.services.exceptions.OrganizationNotFoundException;
+import scheduler.core.services.exceptions.ScheduleAlreadyExistsException;
 import scheduler.core.services.util.EmployeeList;
 import scheduler.core.services.util.OrganizationList;
+import scheduler.core.services.util.OrganizationScheduleList;
 import scheduler.rest.mvc.OrganizationController;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.fasterxml.jackson.databind.util.ISO8601Utils.format;
 import static org.hamcrest.Matchers.*;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
@@ -30,6 +33,8 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static scheduler.core.models.entities.OrganizationSchedule.dateFormat;
+import static scheduler.core.models.entities.OrganizationSchedule.timeFormat;
 
 /**
  * Created by c113554 on 05/10/2016.
@@ -44,16 +49,14 @@ public class OrganizationControllerTest {
     private MockMvc mockMvc;
 
 
-
     @Before
-    public void setup(){
+    public void setup() {
         MockitoAnnotations.initMocks(this);
         mockMvc = MockMvcBuilders.standaloneSetup(controller).build();
     }
 
     @Test
-    public void createOrganization() throws Exception
-    {
+    public void createOrganization() throws Exception {
         Organization organization = new Organization();
         organization.setOrgId(1L);
         organization.setOrgName("Mason's Computer Solutions");
@@ -84,8 +87,7 @@ public class OrganizationControllerTest {
     }
 
     @Test
-    public void createOrganizationAlreadyExists() throws Exception
-    {
+    public void createOrganizationAlreadyExists() throws Exception {
         Organization organization = new Organization();
         organization.setOrgId(1L);
         organization.setOrgName("Mason's Computer Solutions");
@@ -107,8 +109,7 @@ public class OrganizationControllerTest {
     }
 
     @Test
-    public void updateOrganization() throws Exception
-    {
+    public void updateOrganization() throws Exception {
         Organization organization = new Organization();
         organization.setOrgId(1L);
         organization.setOrgName("Mason's Computer Solutions");
@@ -136,8 +137,7 @@ public class OrganizationControllerTest {
     }
 
     @Test
-    public void updateNonExistingOrganization()throws Exception
-    {
+    public void updateNonExistingOrganization() throws Exception {
         when(service.updateOrg(eq(1L), any(Organization.class))).thenReturn(null);
         mockMvc.perform(put("/rest/organizations/1")
                 .content("{\"orgName\":\"Mason's Fresh Clams\", \"orgDesc\":\"A computer repair business.\", \"orgAddress1\":\"225 East Ave Apt 3C\", \"orgAddress2\":\"\", \"orgCity\":\"Syracuse\", \"orgState\":\"NY\", \"orgZip\" : 13224, \"orgCountry\":\"Mason's Computer Solutions\"} ")
@@ -146,8 +146,7 @@ public class OrganizationControllerTest {
     }
 
     @Test
-    public void getExistingOrganization() throws Exception
-    {
+    public void getExistingOrganization() throws Exception {
         Organization organization = new Organization();
         organization.setOrgId(1L);
         organization.setOrgName("Mason's Computer Solutions");
@@ -176,8 +175,7 @@ public class OrganizationControllerTest {
     }
 
     @Test
-    public void getNonExistingOrganization() throws Exception
-    {
+    public void getNonExistingOrganization() throws Exception {
         when(service.findOrg(1L)).thenReturn(null);
         mockMvc.perform(get("/rest/organizations/1"))
                 .andDo(print())
@@ -185,9 +183,8 @@ public class OrganizationControllerTest {
     }
 
     @Test
-    public void getAllOrganizations() throws Exception
-    {
-        List<Organization> list  = new ArrayList<>();
+    public void getAllOrganizations() throws Exception {
+        List<Organization> list = new ArrayList<>();
 
         Organization organizationA = new Organization();
         organizationA.setOrgId(1L);
@@ -225,8 +222,7 @@ public class OrganizationControllerTest {
     }
 
     @Test
-    public void deleteOrganization() throws Exception
-    {
+    public void deleteOrganization() throws Exception {
         Organization organization = new Organization();
         organization.setOrgId(1L);
         organization.setOrgName("Mason's Computer Solutions");
@@ -254,8 +250,7 @@ public class OrganizationControllerTest {
     }
 
     @Test
-    public void deleteNonExistingOrganization() throws Exception
-    {
+    public void deleteNonExistingOrganization() throws Exception {
         when(service.deleteOrg(1L)).thenReturn(null);
         mockMvc.perform(delete("/rest/organizations/1"))
                 .andDo(print())
@@ -263,8 +258,7 @@ public class OrganizationControllerTest {
     }
 
     @Test
-    public void createEmployee() throws Exception
-    {
+    public void createEmployee() throws Exception {
         Organization organization = new Organization();
         organization.setOrgId(1L);
         organization.setOrgName("Mason's Computer Solutions");
@@ -299,8 +293,7 @@ public class OrganizationControllerTest {
     }
 
     @Test
-    public void createEmployeeAlreadyExists() throws Exception
-    {
+    public void createEmployeeAlreadyExists() throws Exception {
         Employee employee = new Employee();
         employee.setEmployeeId(1L);
         employee.setEmployeeFirst("Hernando");
@@ -321,7 +314,7 @@ public class OrganizationControllerTest {
     }
 
     @Test
-    public void createEmployeeNonExistingOrganization() throws Exception{
+    public void createEmployeeNonExistingOrganization() throws Exception {
         Employee employee = new Employee();
         employee.setEmployeeId(1L);
         employee.setEmployeeFirst("Hernando");
@@ -342,7 +335,7 @@ public class OrganizationControllerTest {
     }
 
     @Test
-    public void getAllEmployeesByOrganization() throws Exception{
+    public void getAllEmployeesByOrganization() throws Exception {
         Organization organization = new Organization();
         organization.setOrgId(1L);
         organization.setOrgName("Mason's Computer Solutions");
@@ -390,8 +383,9 @@ public class OrganizationControllerTest {
                 .andExpect(status().isOk());
 
     }
+
     @Test
-    public void getAllEmployeesByNonExistingOrganization() throws Exception{
+    public void getAllEmployeesByNonExistingOrganization() throws Exception {
 
         when(service.findAllEmployeesByOrg(eq(1L))).thenThrow(new OrganizationNotFoundException());
 
@@ -401,16 +395,112 @@ public class OrganizationControllerTest {
     }
 
     @Test
-    public void createOrgSchedule(){
-        //TODO: Implement
+    public void createOrgSchedule() throws Exception {
+        Organization organization = new Organization();
+        organization.setOrgId(1L);
+        OrganizationSchedule schedule = new OrganizationSchedule();
+        DateTime openTime = timeFormat.parseDateTime("07:00:00");
+        DateTime closeTime = timeFormat.parseDateTime("19:00:00");
+        DateTime today = dateFormat.parseDateTime(dateFormat.print(new DateTime()));
+        schedule.setScheduleDate(today);
+        schedule.setOrgOpen(true);
+        schedule.setScheduleOpen(openTime);
+        schedule.setScheduleClose(closeTime);
+        schedule.setOrganization(organization);
+
+        String requestBody = "{\"scheduleDate\":\"" + dateFormat.print(today)  + "\", \"isOpen\":\"" + schedule.getOrgOpen() + "\", \"scheduleOpen\":\"" + timeFormat.print(openTime) + "\", \"scheduleClose\":\"" + timeFormat.print(openTime) + "\"}";
+        when(service.createOrgSchedule(eq(1L), any(OrganizationSchedule.class))).thenReturn(schedule);
+        mockMvc.perform(post("/rest/organizations/1/schedules")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestBody))
+                .andDo(print())
+                .andExpect(jsonPath("$.scheduleDate", is(dateFormat.print(today))))
+                .andExpect(jsonPath("$.scheduleOpen", is(timeFormat.print(openTime))))
+                .andExpect(jsonPath("$.scheduleClose", is(timeFormat.print(closeTime))))
+                .andExpect(jsonPath("$.isOpen", is(String.valueOf(schedule.getOrgOpen()))))
+                .andExpect(jsonPath("$.links[*].href", hasItem(endsWith("organizations/1"))))
+                .andExpect(jsonPath("$.links[*].href", hasItem(endsWith("organizations/1/schedules"))))
+                .andExpect(jsonPath("$.links[*].href", hasItem(endsWith("organizations/1/schedules?date=" + dateFormat.print(today)))))
+                .andExpect(status().isCreated());
     }
 
     @Test
-    public void createOrgScheduleAlreadyExists(){
-        //TODO: Implement
+    public void createOrgScheduleAlreadyExists() throws Exception {
+        DateTime openTime = timeFormat.parseDateTime("07:00:00");
+        DateTime closeTime = timeFormat.parseDateTime("19:00:00");
+        DateTime today = dateFormat.parseDateTime(dateFormat.print(new DateTime()));
+        String requestBody = "{\"scheduleDate\":\"" + dateFormat.print(today)  + "\", \"isOpen\":\"" + "false" + "\", \"scheduleOpen\":\"" + timeFormat.print(openTime) + "\", \"scheduleClose\":\"" + timeFormat.print(openTime) + "\"}";
+        when(service.createOrgSchedule(eq(1L), any(OrganizationSchedule.class))).thenThrow(new ScheduleAlreadyExistsException());
+        mockMvc.perform(post("/rest/organizations/1/schedules")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestBody))
+                .andExpect(status().isConflict());
     }
 
-    @Test void createOrgScheduleOrgNotFound(){
-        //TODO: Implement
+    @Test
+    public void createOrgScheduleOrgNotFound() throws Exception {
+        DateTime openTime = timeFormat.parseDateTime("07:00:00");
+        DateTime closeTime = timeFormat.parseDateTime("19:00:00");
+        DateTime today = dateFormat.parseDateTime(dateFormat.print(new DateTime()));
+        String requestBody = "{\"scheduleDate\":\"" + dateFormat.print(today)  + "\", \"isOpen\":\"" + "false" + "\", \"scheduleOpen\":\"" + timeFormat.print(openTime) + "\", \"scheduleClose\":\"" + timeFormat.print(openTime) + "\"}";
+        when(service.createOrgSchedule(eq(1L), any(OrganizationSchedule.class))).thenThrow(new OrganizationNotFoundException());
+        mockMvc.perform(post("/rest/organizations/1/schedules")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestBody))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void createBulkOrgSchedule() throws Exception {
+        List<OrganizationSchedule> schedules = new ArrayList<>();
+        OrganizationScheduleList list = new OrganizationScheduleList();
+
+        Organization organization = new Organization();
+        organization.setOrgId(1L);
+        OrganizationSchedule schedule = new OrganizationSchedule();
+        OrganizationSchedule schedule1 = new OrganizationSchedule();
+        OrganizationSchedule schedule2 = new OrganizationSchedule();
+        DateTime openTime = timeFormat.parseDateTime("07:00:00");
+        DateTime closeTime = timeFormat.parseDateTime("19:00:00");
+        DateTime today = dateFormat.parseDateTime(dateFormat.print(new DateTime()));
+        DateTime todayPlusOne = today.plusDays(1);
+        DateTime todayPlusTwo = today.plusDays(2);
+
+        schedule.setScheduleDate(today);
+        schedule.setOrgOpen(true);
+        schedule.setScheduleOpen(openTime);
+        schedule.setScheduleClose(closeTime);
+        schedule.setOrganization(organization);
+
+        schedule1.setScheduleDate(todayPlusOne);
+        schedule1.setOrgOpen(true);
+        schedule1.setScheduleOpen(openTime);
+        schedule1.setScheduleClose(closeTime);
+        schedule1.setOrganization(organization);
+
+        schedule2.setScheduleDate(todayPlusTwo);
+        schedule2.setOrgOpen(false);
+        schedule2.setOrganization(organization);
+
+        schedules.add(schedule);
+        schedules.add(schedule1);
+        schedules.add(schedule2);
+
+        list.setSchedules(schedules);
+
+        String requestBody = "[{\"scheduleDate\":\"" + dateFormat.print(today) + "\", \"isOpen\":\"" + schedule.getOrgOpen() + "\", \"scheduleOpen\":\"7:00:00\", \"scheduleClose\":\"19:00:00\"}, {\"scheduleDate\":\"" + dateFormat.print(todayPlusOne) + "\", \"isOpen\":\"" + schedule1.getOrgOpen() + "\", \"scheduleOpen\":\"7:00:00\", \"scheduleClose\":\"19:00:00\"}, {\"scheduleDate\":\"" + dateFormat.print(todayPlusTwo) + "\", \"isOpen\":\"" + schedule2.getOrgOpen() + "\", \"scheduleOpen\":\"7:00:00\", \"scheduleClose\":\"19:00:00\"}]";
+        when(service.bulkCreateOrgSchedule(eq(1L), any(OrganizationScheduleList.class))).thenReturn(list);
+        mockMvc.perform(post("/rest/organizations/1/schedule")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(requestBody))
+                .andDo(print())
+                .andExpect(jsonPath("$.scheduleResourceList[*].scheduleDate", hasItem(dateFormat.print(today))))
+                .andExpect(jsonPath("$.scheduleResourceList[*].scheduleOpen", hasItem(timeFormat.print(openTime))))
+                .andExpect(jsonPath("$.scheduleResourceList[*].isOpen", hasItem(Boolean.toString(schedule.getOrgOpen()))))
+                .andExpect(jsonPath("$.scheduleResourceList[*].scheduleClose", hasItem(timeFormat.print(closeTime))))
+                .andExpect(jsonPath("$.scheduleResourceList[*].links[*].href", hasItem(endsWith("organizations/1"))))
+                .andExpect(jsonPath("$.scheduleResourceList[*].links[*].href", hasItem(endsWith("organizations/1/schedules"))))
+                .andExpect(jsonPath("$.scheduleResourceList[*].links[*].href", hasItem(endsWith("organizations/1/schedules?date=" + dateFormat.print(today)))))
+                .andExpect(status().isCreated());
     }
 }

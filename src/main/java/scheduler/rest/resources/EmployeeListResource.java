@@ -18,4 +18,5 @@ public class EmployeeListResource extends ResourceSupport {
     public void setEmployees(List<EmployeeResource> employees) {
         this.employees = employees;
     }
+
 }
